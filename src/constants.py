@@ -1,9 +1,11 @@
 import os
 import yaml
 
-# config.yaml constants
+# general constants
+DATA_DIR = os.path.join(os.path.dirname(__file__), '../data/')
 CONFIG_PATH = os.path.join(os.path.dirname(__file__), '../config.yaml')
 
+# Load in config.yaml
 with open(CONFIG_PATH, "r") as yaml_file:
     config = yaml.safe_load(yaml_file)
 
@@ -12,6 +14,7 @@ PAGEVIEWS_BASE_URL = "https://wikimedia.org/api/rest_v1/metrics/pageviews/per-ar
 PAGEVIEWS_WEBSITE = config["PERSONAL_WEBSITE"]
 PAGEVIEWS_EMAIL_ADDRESS = config["EMAIL_ADDRESS"]
 
-
-if __name__ == "__main__":
-    print(CONFIG_PATH)
+# word2vec.py constants
+W2V_PRETRAINED_MODEL = "fasttext-wiki-news-subwords-300"
+W2V_GENSIM_PATH = os.path.join(DATA_DIR, "w2v")
+W2V_KEY_LIMIT = 200000

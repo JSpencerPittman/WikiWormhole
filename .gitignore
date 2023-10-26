@@ -4,3 +4,5 @@ env/
 # Caches
 WikiWormhole.egg-info/
 src/__pycache__/
+dist/
+data/
