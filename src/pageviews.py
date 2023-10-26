@@ -2,8 +2,7 @@ from __future__ import annotations
 import requests
 from enum import Enum
 from datetime import ( date, timezone, datetime, time )
-
-PAGEVIEWS_BASE_URL = "https://wikimedia.org/api/rest_v1/metrics/pageviews/per-article/en.wikipedia/all-access/all-agents"
+import constants
 
 class PageViewsAPI(object):
     class Granularity(Enum):
@@ -24,16 +23,24 @@ class PageViewsAPI(object):
         self.finish = finish
         self.granularity = granularity
 
-    def get(self):
+    def get_page_views(self):
         headers = {"Accept": "application/json",
-                   "User-Agent": "WikiWormhole/1.0 (https://github.com/JSpencerPittman; jspencerpittman@gmail.com)"}
+                   "User-Agent": f"WikiWormhole/1.0 ({constants.PAGEVIEWS_WEBSITE}; {constants.PAGEVIEWS_EMAIL_ADDRESS})"}
+    
         res = requests.get(self._generate_url(), headers=headers)
-        print(res.text)
+
+        if res.status_code != 200:
+            raise Exception("Error: PageViewsAPI: invalid URL request")
+        
+        json_data = res.json()
+        self.views = [d['views'] for d in json_data['items']]
+
+        return self.views
 
     def _generate_url(self):
         start_timestamp = PageViewsAPI._generate_timestamp(self.start)
         finish_timestamp = PageViewsAPI._generate_timestamp(self.finish)
-        return f"{PAGEVIEWS_BASE_URL}/{self.subject}/{self.granularity.value}/{start_timestamp}/{finish_timestamp}"
+        return f"{constants.PAGEVIEWS_BASE_URL}/{self.subject}/{self.granularity.value}/{start_timestamp}/{finish_timestamp}"
 
     @staticmethod
     def _generate_timestamp(dt: datetime):
@@ -43,10 +50,3 @@ class PageViewsAPI(object):
         timestamp = f"{year}{month}{day}{hour}"
         return timestamp
     
-
-if __name__ == "__main__":
-    start = datetime(2015, 10, 1, 0)
-    finish = datetime(2015, 11, 1, 0)
-    pvapi = PageViewsAPI("Albert_Einstein", start, finish, PageViewsAPI.Granularity.MONTHLY)
-    print(pvapi.get())
-    # get_page_views("https://wikimedia.org/api/rest_v1/metrics/pageviews/per-article/en.wikipedia/all-access/all-agents/Albert_Einstein/daily/2015100100/2015103100")
