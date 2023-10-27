@@ -3,7 +3,7 @@ env/
 
 # Caches
 WikiWormhole.egg-info/
-src/__pycache__/
+__pycache__/
 dist/
 data/
 

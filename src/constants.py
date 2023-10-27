@@ -1,5 +1,6 @@
 import os
 import yaml
+from datetime import datetime
 
 # general constants
 DATA_DIR = os.path.join(os.path.dirname(__file__), '../data/')
@@ -13,6 +14,10 @@ with open(CONFIG_PATH, "r") as yaml_file:
 PAGEVIEWS_BASE_URL = "https://wikimedia.org/api/rest_v1/metrics/pageviews/per-article/en.wikipedia/all-access/all-agents"
 PAGEVIEWS_WEBSITE = config["PERSONAL_WEBSITE"]
 PAGEVIEWS_EMAIL_ADDRESS = config["EMAIL_ADDRESS"]
+
+PAGEVIEWS_QUERY_START = datetime(2020, 10, 1, 0)
+PAGEVIEWS_QUERY_END = datetime(2020, 11, 1, 0)
+PAGEVIEWS_QUERY_GRANULARITY = 'MONTHLY'
 
 # title2vec.py constants
 T2V_PRETRAINED_MODEL = "fasttext-wiki-news-subwords-300"
