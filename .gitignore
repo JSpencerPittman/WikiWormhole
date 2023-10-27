@@ -6,3 +6,7 @@ WikiWormhole.egg-info/
 src/__pycache__/
 dist/
 data/
+
+# APIs
+apicache-py3/
+throttle.ctrl

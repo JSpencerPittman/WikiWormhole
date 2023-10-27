@@ -1,11 +1,10 @@
 import pywikibot
 
-def get_python_wikipedia_content():
-    site = pywikibot.Site('en', 'wikipedia')  # Connect to the English Wikipedia
-    page = pywikibot.Page(site, "Olentzero")
-    # return [link for link in page.linkedPages() if link.namespace() == 0]
-    return page.text
+def get_wikipedia_page_from_title(title):
+    site = pywikibot.Site('en', 'wikipedia')
+    page = pywikibot.Page(site, title)
+    return page
 
-if __name__ == "__main__":
-    content = get_python_wikipedia_content()
-    print(content)
+def get_wikipedia_page_from_url(url):
+    title = url.split('/')[-1]
+    return get_wikipedia_page_from_title(title)
