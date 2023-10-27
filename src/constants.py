@@ -14,8 +14,8 @@ PAGEVIEWS_BASE_URL = "https://wikimedia.org/api/rest_v1/metrics/pageviews/per-ar
 PAGEVIEWS_WEBSITE = config["PERSONAL_WEBSITE"]
 PAGEVIEWS_EMAIL_ADDRESS = config["EMAIL_ADDRESS"]
 
-# word2vec.py constants
+# title2vec.py constants
 T2V_PRETRAINED_MODEL = "fasttext-wiki-news-subwords-300"
-T2V_GENSIM_PATH = os.path.join(DATA_DIR, "T2V/gensim")
-T2V_NLTK_PATH = os.path.join(DATA_DIR, "T2V/nltk")
+T2V_GENSIM_PATH = os.path.join(DATA_DIR, "w2v")
+T2V_NLTK_PATH = os.path.join(DATA_DIR, "nltk")
 T2V_KEY_LIMIT = 200000
