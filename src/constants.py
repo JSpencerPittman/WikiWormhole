@@ -15,6 +15,7 @@ PAGEVIEWS_WEBSITE = config["PERSONAL_WEBSITE"]
 PAGEVIEWS_EMAIL_ADDRESS = config["EMAIL_ADDRESS"]
 
 # word2vec.py constants
-W2V_PRETRAINED_MODEL = "fasttext-wiki-news-subwords-300"
-W2V_GENSIM_PATH = os.path.join(DATA_DIR, "w2v")
-W2V_KEY_LIMIT = 200000
+T2V_PRETRAINED_MODEL = "fasttext-wiki-news-subwords-300"
+T2V_GENSIM_PATH = os.path.join(DATA_DIR, "T2V/gensim")
+T2V_NLTK_PATH = os.path.join(DATA_DIR, "T2V/nltk")
+T2V_KEY_LIMIT = 200000
