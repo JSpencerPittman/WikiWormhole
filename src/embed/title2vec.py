@@ -7,6 +7,27 @@ import os
 import numpy as np
 import string
 
+class VectorizedTitle(object):
+    def __init__(self):
+        self.vectors = list()
+        self.tokens = list()
+        self.size = 0
+
+    def add(self, token, vector):
+        self.tokens.append(token)
+        self.vectors.append(vector)
+        self.size += 1
+
+    def get_vectors(self):
+        return np.array(self.vectors)
+    
+    def get_tokens(self):
+        return self.tokens
+    
+    def __len__(self):
+        return self.size
+
+
 class Title2Vec(object):
     def __init__(self):
         self.stopwords = None
@@ -21,12 +42,12 @@ class Title2Vec(object):
 
         vectors = self.embedder.vectors_for_all(tokens)
 
-        results = list()
+        vectorized = VectorizedTitle()
         for token in tokens:
             if vectors.has_index_for(token):
-                results.append([token, vectors[token]])
+                vectorized.add(token, vectors[token])
         
-        return results
+        return vectorized
 
     def word_to_vector(self, word: str):
         try:
