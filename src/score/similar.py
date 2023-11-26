@@ -9,7 +9,7 @@ def title_similarity(title_vec1: VectorizedTitle,
 
     sim_mat = cosine_similarity_matrix(A, B)
 
-    return sim_mat.max()
+    return np.mean(np.max(sim_mat, axis=1))
 
 def cosine_similarity_matrix(A, B):
     dot = np.dot(A,B.T)

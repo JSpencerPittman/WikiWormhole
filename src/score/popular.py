@@ -1,6 +1,6 @@
 import pywikibot
-from api import wikipage
-from api.pageviews import PageViewsAPI
+from wikiapi import wikipage
+from wikiapi.pageviews import get_page_views
 import constants
 
 def popularity_score(page, 
@@ -25,12 +25,7 @@ def outgoing_links(page):
     return len(wikipage.get_outgoing_links(page))
 
 def views(page):
-    subject = page.title()
-    granularity = PageViewsAPI.Granularity[constants.PAGEVIEWS_QUERY_GRANULARITY]
-    pv_api = PageViewsAPI(
-        subject,
-        constants.PAGEVIEWS_QUERY_START,
-        constants.PAGEVIEWS_QUERY_END,
-        granularity
-    )
-    return pv_api.get_page_views()[0]
+    return get_page_views(page.title(),
+                          constants.PAGEVIEWS_QUERY_START,
+                          constants.PAGEVIEWS_QUERY_END,
+                          constants.PAGEVIEWS_QUERY_GRANULARITY)[0]
