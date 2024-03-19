@@ -3,6 +3,7 @@ from traversal.similar import SimilarTraversal
 from traversal.table import WikipageTable
 import json
 
+
 def connect(request):
     request = json.loads(request)
 
@@ -29,14 +30,12 @@ def connect(request):
 
     print("Starting Similarity Traversal...")
     st = SimilarTraversal(popular_start, popular_end)
-    
+
     while not st.found():
         st.safe_traversal()
 
-    final_pathway = start_pathway[:-1] + st.table.unravel(popular_end) + end_pathway[1::-1]
-    
+    final_pathway = start_pathway[:-1] + \
+        st.table.unravel(popular_end) + end_pathway[1::-1]
+
     results = dict(results=final_pathway)
     return json.dumps(results)
-    
-    
-        

@@ -1,10 +1,10 @@
-import pywikibot
-from wikiapi import wikipage
+from src import wikiapi
 from wikiapi.pageviews import get_page_views
 import constants
 
-def popularity_score(page, 
-                     length_weight=-1, 
+
+def popularity_score(page,
+                     length_weight=-1,
                      outbound_weight=-1,
                      views_weight=-1):
     score = 0
@@ -18,11 +18,14 @@ def popularity_score(page,
 
     return score
 
+
 def page_length(page):
     return len(page.text)
 
+
 def outgoing_links(page):
-    return len(wikipage.get_outgoing_links(page))
+    return len(wikiapi.retrieve_outgoing_links(page))
+
 
 def views(page):
     return get_page_views(page.title(),

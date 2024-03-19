@@ -1,7 +1,8 @@
-from wikiapi import wikipage
+from src import wikiapi
 from embed.title2vec import Title2Vec, VectorizedTitle
 from score.similar import title_similarity
 from traversal.table import WikipageTable
+
 
 class SimilarTraversal(object):
     def __init__(self, start_subject, target_subject):
@@ -9,8 +10,8 @@ class SimilarTraversal(object):
         self.target = target_subject
         self.trace = [start_subject]
 
-        self.page = wikipage.get_wikipedia_page_from_title(start_subject)
-    
+        self.page = wikiapi.generate_wiki_page_from_title(start_subject)
+
         self.t2v = Title2Vec()
 
         self.target_vectorized = self.t2v.title_to_vector(target_subject)
@@ -24,7 +25,7 @@ class SimilarTraversal(object):
 
     def safe_traversal(self):
         traversed = False
-        
+
         while not traversed:
             try:
                 self.traverse()
@@ -34,14 +35,14 @@ class SimilarTraversal(object):
 
                 self.trace.pop()
                 self.subject = self.trace[-1]
-                self.page = wikipage.get_wikipedia_page_from_title(self.subject)
-
+                self.page = wikiapi.generate_wiki_page_from_title(
+                    self.subject)
 
     def traverse(self):
         top_score = None
         top_page = None
 
-        for link in wikipage.get_outgoing_links(self.page):
+        for link in wikiapi.retrieve_outgoing_links(self.page):
             if link.title() in self.trace or link.title() in self.blacklist:
                 continue
 
@@ -54,12 +55,10 @@ class SimilarTraversal(object):
             if top_score is None or sim_score > top_score:
                 top_score = sim_score
                 top_page = link
-        
+
         self.page = top_page
         self.subject = top_page.title()
 
         print(f"{self.trace} -> {self.subject}")
 
         self.trace.append(self.subject)
-
-        
