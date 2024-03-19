@@ -1,3 +1,6 @@
+# IDE configurations
+.vscode
+
 # Virtual Environment
 env/
 
@@ -6,6 +9,7 @@ WikiWormhole.egg-info/
 __pycache__/
 dist/
 data/
+apicache/
 
 # APIs
 apicache-py3/
