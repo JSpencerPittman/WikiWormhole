@@ -58,7 +58,8 @@ def retrieve_outgoing_links(page: pywikibot.Page) -> List[pywikibot.Page]:
 
 def retreive_pageviews(page: pywikibot.Page,
                        start_dt: datetime,
-                       end_dt: datetime) -> List[int]:
+                       end_dt: datetime,
+                       granularity: str) -> List[int]:
     """
     Retreive page views for a wiki page.
 
@@ -69,6 +70,7 @@ def retreive_pageviews(page: pywikibot.Page,
 
     Raises:
         Exception: start time must be before end time.
+        Exception: granularity is not daily or monthly.
         Exception: request may fail.
 
     Returns:
@@ -79,6 +81,11 @@ def retreive_pageviews(page: pywikibot.Page,
     if start_dt >= end_dt:
         raise Exception(
             "WikiAPI.get_page_views: end date is before start date.")
+
+    # Verify granularity is monthly or daily.
+    if granularity not in ['DAILY', 'MONTHLY']:
+        raise Exception(
+            "WikiAPI.get_page_views: granularity must be either DAILY or MONTHLY.")
 
     # Headers for the API request.
     headers = {"Accept": "application/json",
@@ -97,7 +104,7 @@ def retreive_pageviews(page: pywikibot.Page,
     # Did the request fail.
     if response.status_code != 200:
         raise Exception(
-            f"PageViewsAPI: invalid for URL request: {generated_url}")
+            f"PWikiAPI.get_page_views: invalid for URL request: {generated_url}")
 
     # Extract page views from JSON.
     return [d['views'] for d in response.json()['items']]
