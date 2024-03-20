@@ -1,49 +1,158 @@
-class WikipageTable(object):
-    def __init__(self, root):
-        self.root = root
-        self.table = dict()
-        self.size = 1
+from typing import Set, List
 
-    def spot(self, subject, source=""):
-        if subject in self.table:
-            self.table[subject][0] += 1
+
+class SearchGraph(object):
+    class Node(object):
+        def __init__(self, source_node: str) -> None:
+            """
+            Constructor for TableEntry, a class for recording what and how many nodes have 
+            referenced this node.
+
+            Args:
+                source_node (str): the node from which this node was referenced.
+            """
+
+            self._count = 1
+            self._latest = source_node
+            self._all_sources = set(source_node)
+
+        def new_reference(self, source_node: str) -> None:
+            """
+            This subject was referenced by the source node.
+
+            Args:
+                source_node (str): the node from which this node was referenced.
+            """
+
+            if source_node not in self._all_sources:
+                self._count += 1
+                self._all_sources.add(source_node)
+
+            self._latest = source_node
+
+        def total_references(self) -> int:
+            """
+            Returns the total number of unique source nodes that reference this node.
+
+            Returns:
+                int: The total number of unique source nodes that reference this node.
+            """
+
+            return self._count
+
+        def latest_reference(self) -> str:
+            """
+            Returns the last node to reference this subject.
+
+            Returns:
+                str: The last node to reference this subject.
+            """
+
+            return self._latest
+
+        def all_references(self) -> Set[str]:
+            """
+            Returns all nodes that have referenced this node.
+
+            Returns:
+                List[str]: All nodes that have referenced this node.
+            """
+
+            return self._all_sources
+
+    def __init__(self, root: str) -> None:
+        """
+        Constructor for search graph.
+
+        Args:
+            root (str): the first node from which all target nodes can be
+                connected to. 
+        """
+
+        self._graph = dict()
+        self._root = root
+
+    def new_edge(self, source_node: str, target_node: str) -> None:
+        """
+        Adds a new edge in the search graph going from the source to the target node.
+
+        Args:
+            source_node (str): node from which edge originates.
+            target_node (str): node that edge points to.
+
+        Raises:
+            Exception: Invalid source or target node. 
+        """
+
+        if source_node == "" or target_node == "":
+            raise Exception(
+                "SearchGraph.new_edge: please provide a valid source and target node.")
+        
+        if target_node not in 
+
+        if target_node in self._graph.keys():
+            self._graph[target_node].new_reference(source_node)
+        else:
+            self._graph[target_node] = self.Node(source_node)
+
+    def node_exists(self, node: str) -> bool:
+        """
+        Does the node exist?
+
+        Args:
+            node (str): node we are checking the existence of.
+
+        Returns:
+            bool: does the node exist in the graph?
+        """
+        
+        return node in self._graph.keys() or node == self._root
+    
+    def total_references(self, node: str) -> int:
+        """
+        Returns the total number of unique source nodes that reference this node.
+
+        Args:
+            node (str): the node being referred.
+
+        Returns:
+            int:  number of unique source nodes that reference this node.
+        """
+
+        return self._graph[node].total_references() if self.node_exists(node) else 0
             
-            if source != "" and self.table[subject][1] == "":
-                self.table[subject][1] = source
-        
-        else:
-            self.table[subject] = [1, source]
-            self.size += 1
+    def parent(self, node: str) -> str:
+        """
+        Returns the last node pointing at this node.
 
-    def entry_exists(self, subject):
-        return subject in self.table
-    
-    def hits(self, subject):
-        if subject in self.table:
-            return self.table[subject][0]
-        else:
-            return 0
-        
-    def parent(self, subject):
-        if subject not in self.table:
-            return ""
-        return self.table[subject][1]
-    
-    def unravel(self, subject):
-        pathway = [subject]
-        
-        while self.parent(subject) != self.root:
-            if subject == "":
-                raise Exception("NULL SUBJECT")
-            subject = self.parent(subject)
-            pathway.append(subject)
-        pathway.append(self.root)
+        Args:
+            node (str): the node that is being referenced.
 
-        return pathway[::-1]
+        Returns:
+            str: the last node pointing at this node.
+        """
 
-    def keys(self):
-        return list(self.table.keys())
+        return self._graph[node].latest_references() if self.node_exists(node) else ""
     
-    def __len__(self):
-        return self.size
-    
+    def unravel(self, final_node: str) -> List[str]:
+        """
+        Find the path from the root node to the final node.
+
+        Args:
+            final_node (str): the final node in the path.
+
+        Returns:
+            List[str]: a list of the nodes connecting the root to the path.
+        """
+
+        trace = [final_node]
+        curr_node = final_node
+
+        while curr_node != self._root:
+            curr_node = self._graph[curr_node].latest_reference()
+            trace.append(curr_node)
+
+        trace.append(self._root)
+
+        return trace[::-1]
+            
