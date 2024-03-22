@@ -2,15 +2,15 @@ import os
 import yaml
 from datetime import datetime
 
-# general constants
+# General constants.
 DATA_DIR = os.path.join(os.path.dirname(__file__), '../data/')
 CONFIG_PATH = os.path.join(os.path.dirname(__file__), '../config.yaml')
 
-# Load in config.yaml
+# Load configurations.
 with open(CONFIG_PATH, "r") as yaml_file:
     config = yaml.safe_load(yaml_file)
 
-# pageviews.py constants
+# Page views API constants.
 PAGEVIEWS_BASE_URL = "https://wikimedia.org/api/rest_v1/metrics/pageviews/per-article/en.wikipedia/all-access/all-agents"
 PAGEVIEWS_WEBSITE = config["PERSONAL_WEBSITE"]
 PAGEVIEWS_EMAIL_ADDRESS = config["EMAIL_ADDRESS"]
@@ -26,4 +26,4 @@ T2V_NLTK_PATH = os.path.join(DATA_DIR, "nltk")
 T2V_KEY_LIMIT = 200000
 
 # Popular constants
-POP_BRANCH_FACTOR = 5
+POP_EXPLORE_PER_TRAVERSAL = 5

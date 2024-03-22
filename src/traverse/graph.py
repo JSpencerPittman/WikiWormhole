@@ -87,8 +87,6 @@ class SearchGraph(object):
         if source_node == "" or target_node == "":
             raise Exception(
                 "SearchGraph.new_edge: please provide a valid source and target node.")
-        
-        if target_node not in 
 
         if target_node in self._graph.keys():
             self._graph[target_node].new_reference(source_node)
@@ -105,9 +103,9 @@ class SearchGraph(object):
         Returns:
             bool: does the node exist in the graph?
         """
-        
+
         return node in self._graph.keys() or node == self._root
-    
+
     def total_references(self, node: str) -> int:
         """
         Returns the total number of unique source nodes that reference this node.
@@ -120,7 +118,7 @@ class SearchGraph(object):
         """
 
         return self._graph[node].total_references() if self.node_exists(node) else 0
-            
+
     def parent(self, node: str) -> str:
         """
         Returns the last node pointing at this node.
@@ -133,7 +131,7 @@ class SearchGraph(object):
         """
 
         return self._graph[node].latest_references() if self.node_exists(node) else ""
-    
+
     def unravel(self, final_node: str) -> List[str]:
         """
         Find the path from the root node to the final node.
@@ -155,4 +153,9 @@ class SearchGraph(object):
         trace.append(self._root)
 
         return trace[::-1]
-            
+
+    def __len__(self):
+        return len(self._graph)
+
+    def target_nodes(self):
+        return self._graph.keys()
