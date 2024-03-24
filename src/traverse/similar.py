@@ -1,5 +1,5 @@
 from src import wikiapi
-from embed.title2vec import Title2Vec, EmbeddedTitle
+from src.title2vec import Title2Vec, EmbeddedTitle
 import numpy as np
 import pywikibot
 from src.traverse.traverse import Traverse

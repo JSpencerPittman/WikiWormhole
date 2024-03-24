@@ -1,4 +1,4 @@
-import constants
+from src import constants
 import gensim.downloader as gsapi
 from gensim.models import KeyedVectors
 from nltk.corpus import stopwords

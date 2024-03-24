@@ -1,4 +1,5 @@
 import random
+from typing import List
 
 
 class SinkSet(object):
@@ -6,20 +7,13 @@ class SinkSet(object):
         self._filled = set()
         self._pool = dict()
 
-    def fill(self, items):
-        try:
-            _ = iter(items)
-        except TypeError:
-            items = list(items)
-
+    def fill(self, items: List[str]):
         for item in items:
             self._filled.add(item)
             self._pool[item] = True
 
-    def drain(self, items):
-        try:
-            _ = iter(items)
-        except TypeError:
+    def drain(self, items: List[str]):
+        if type(items) == str:
             items = list(items)
 
         for item in items:

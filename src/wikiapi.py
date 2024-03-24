@@ -1,5 +1,5 @@
 import pywikibot
-import constants
+from src import constants
 import requests
 from typing import List
 from datetime import datetime
@@ -96,7 +96,8 @@ def retreive_pageviews(page: pywikibot.Page,
     end_ts = _generate_timestamp(end_dt)
 
     # Generate the URL for the pageviews API.
-    generated_url = f"{constants.PAGEVIEWS_BASE_URL}/{page.title()}/{constants.PAGEVIEWS_QUERY_GRANULARITY}/{start_ts}/{end_ts}"
+    uri_title = page.title().replace(' ', '_')
+    generated_url = f"{constants.PAGEVIEWS_BASE_URL}/{uri_title}/{constants.PAGEVIEWS_QUERY_GRANULARITY}/{start_ts}/{end_ts}"
 
     # Retrieve JSON data from the API.
     response = requests.get(generated_url, headers=headers)

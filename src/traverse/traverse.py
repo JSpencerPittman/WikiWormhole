@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+import stat
 from src.traverse.graph import SearchGraph
 
 
@@ -11,3 +12,10 @@ class Traverse(ABC):
     @abstractmethod
     def traverse(self):
         pass
+
+    @staticmethod
+    def valid_page(title: str):
+        title = title.lower()
+        if 'wayback' in title or 'identifier' in title:
+            return False
+        return True

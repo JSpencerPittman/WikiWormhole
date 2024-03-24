@@ -13,7 +13,7 @@ class SearchGraph(object):
             """
 
             self._count = 1
-            self._latest = source_node
+            self._first = source_node
             self._all_sources = set(source_node)
 
         def new_reference(self, source_node: str) -> None:
@@ -28,8 +28,6 @@ class SearchGraph(object):
                 self._count += 1
                 self._all_sources.add(source_node)
 
-            self._latest = source_node
-
         def total_references(self) -> int:
             """
             Returns the total number of unique source nodes that reference this node.
@@ -40,7 +38,7 @@ class SearchGraph(object):
 
             return self._count
 
-        def latest_reference(self) -> str:
+        def first_reference(self) -> str:
             """
             Returns the last node to reference this subject.
 
@@ -48,7 +46,7 @@ class SearchGraph(object):
                 str: The last node to reference this subject.
             """
 
-            return self._latest
+            return self._first
 
         def all_references(self) -> Set[str]:
             """
@@ -130,7 +128,7 @@ class SearchGraph(object):
             str: the last node pointing at this node.
         """
 
-        return self._graph[node].latest_references() if self.node_exists(node) else ""
+        return self._graph[node].first_reference() if self.node_exists(node) else ""
 
     def unravel(self, final_node: str) -> List[str]:
         """
@@ -147,7 +145,7 @@ class SearchGraph(object):
         curr_node = final_node
 
         while curr_node != self._root:
-            curr_node = self._graph[curr_node].latest_reference()
+            curr_node = self._graph[curr_node].first_reference()
             trace.append(curr_node)
 
         trace.append(self._root)

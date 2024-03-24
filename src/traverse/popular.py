@@ -1,4 +1,4 @@
-import constants
+from src import constants
 from src.util.sinkset import SinkSet
 from src.traverse.traverse import Traverse
 from src import wikiapi
@@ -22,7 +22,7 @@ class PopularTraverse(Traverse):
         self._active_page = wikiapi.generate_wiki_page_from_title(
             start_subject)
         self._frontier = SinkSet()
-        self._frontier.fill(start_subject)
+        self._frontier.fill([start_subject])
 
     def traverse(self) -> None:
         """
@@ -41,6 +41,8 @@ class PopularTraverse(Traverse):
         # Select nodes from the frontier to explore
         explore = self._frontier.sample(
             constants.POP_EXPLORE_PER_TRAVERSAL, True)
+        print(explore)
+        print()
 
         if len(explore) == 0:
             raise Exception(
@@ -51,9 +53,10 @@ class PopularTraverse(Traverse):
             # Add outgoing connections to graph for current node
             page = wikiapi.generate_wiki_page_from_title(node)
             for link in wikiapi.retrieve_outgoing_links(page):
-                if 'identifier' in link.title():
+                if not Traverse.valid_page(link.title()):
                     continue
                 self._graph.new_edge(node, link.title())
+                self._frontier.fill([link.title()])
 
         # Identify most popular node
         max_refs, pop_node = -1, ""
@@ -90,10 +93,14 @@ class PopularTraverse(Traverse):
 
         for page in self._trace:
             page = wikiapi.generate_wiki_page_from_title(page)
-            views = sum(wikiapi.retreive_pageviews(page,
-                                                   constants.PAGEVIEWS_QUERY_START,
-                                                   constants.PAGEVIEWS_QUERY_END,
-                                                   constants.PAGEVIEWS_QUERY_GRANULARITY))
+            try:
+                views = sum(wikiapi.retreive_pageviews(page,
+                                                       constants.PAGEVIEWS_QUERY_START,
+                                                       constants.PAGEVIEWS_QUERY_END,
+                                                       constants.PAGEVIEWS_QUERY_GRANULARITY))
+            except Exception as e:
+                continue
+
             # Does page have the most views.
             if views > max_views:
                 max_views = views
