@@ -6,7 +6,7 @@ from src.traverse.traverse import Traverse
 
 
 class SimilarTraverse(Traverse):
-    def __init__(self, start_subject: str, target_subject: str) -> None:
+    def __init__(self, start_subject: str, target_subject: str, t2v: Title2Vec) -> None:
         """
         Constructor for SimilarTraverse.
 
@@ -23,9 +23,10 @@ class SimilarTraverse(Traverse):
 
         self._active_page = wikiapi.generate_wiki_page_from_title(
             start_subject)
-        self._t2v = Title2Vec()
+        self._t2v = t2v
 
         self._target_embedded = self._t2v.embed_title(target_subject)
+        self._blacklist = list()
 
     def target_found(self) -> bool:
         """
@@ -47,14 +48,46 @@ class SimilarTraverse(Traverse):
         5. Calculate similarity between link and title.
         6. Save link if its the most similar page encountered so far.
         7. Select the most similar page as the next node.
+
+        Sometimes dead ends will be encountered so this algorithm backtracks
+        until it escapes the dead end.
         """
 
-        top_score, top_page = -1, pywikibot.Page("")
+        success_traverse = False
+        while not success_traverse:
+            try:
+                self._attempt_traverse()
+                success_traverse = True
+            except Exception:
+                failed_subject = self._trace.pop()
+                prev_subject = self._trace[-1]
+
+                # Undo traversal.
+                self._subject = prev_subject
+                self._active_page = wikiapi.generate_wiki_page_from_title(
+                    prev_subject)
+
+                # Remember the failed page.
+                self._blacklist.append(failed_subject)
+
+    def _attempt_traverse(self):
+        """
+        This algorithm works as follows:
+        1. Loop through all outgoing links for the current page.
+        2. For each link do steps 3-6
+        3. Add link to the graph.
+        4. Embed the link using pre-trained Word2Vec model.
+        5. Calculate similarity between link and title.
+        6. Save link if its the most similar page encountered so far.
+        7. Select the most similar page as the next node.
+        """
+
+        top_score, top_page = -1, None
 
         # Find the node connected to this page with the highest similarity
         for link in wikiapi.retrieve_outgoing_links(self._active_page):
-            # Don't revisit past nodes.
-            if link.title() in self._trace:
+            # Don't revisit past nodes or failed nodes.
+            if link.title() in self._trace or link.title() in self._blacklist:
                 continue
 
             # Inform the graph of this new connection
@@ -74,9 +107,12 @@ class SimilarTraverse(Traverse):
                 top_page = link
 
         # Move to the most similar page.
-        self._subject = top_page.title()
-        self._active_page = top_page
-        self._trace.append(top_page.title())
+        if type(top_page) == pywikibot.Page:
+            self._subject = top_page.title()
+            self._active_page = top_page
+            self._trace.append(top_page.title())
+        else:
+            raise Exception("SimilarTraverse.traverse: no valid pages found.")
 
     def title_sim_score(self, title1: EmbeddedTitle, title2: EmbeddedTitle) -> float:
         """
