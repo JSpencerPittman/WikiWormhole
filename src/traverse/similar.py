@@ -1,9 +1,9 @@
-from src import wikiapi
+from src import constants, wikiapi
 from src.title2vec import Title2Vec, EmbeddedTitle
 import numpy as np
-import pywikibot
 from src.traverse.traverse import Traverse
 from src.util.fixedpq import FixedPriorityQueue
+from src import constants
 
 
 class SimilarTraverse(Traverse):
@@ -29,7 +29,8 @@ class SimilarTraverse(Traverse):
         self._target_embedded = self._t2v.embed_title(target_subject)
         self._blacklist = list()
         self._sim_scores = dict()
-        self._fixpq = FixedPriorityQueue(10, True)
+        self._fixpq = FixedPriorityQueue(
+            constants.SIM_PRIORITYQUEUE_SIZE, True)
 
     def target_found(self) -> bool:
         """
