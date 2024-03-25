@@ -1,6 +1,6 @@
-from src.traverse.popular import PopularTraverse
-from src.traverse.similar import SimilarTraverse
-from src.title2vec import Title2Vec
+from src.wikiwormhole.traverse.popular import PopularTraverse
+from src.wikiwormhole.traverse.similar import SimilarTraverse
+from src.wikiwormhole.title2vec import Title2Vec
 
 print("TEST: loading title2vec model")
 t2v = Title2Vec()
