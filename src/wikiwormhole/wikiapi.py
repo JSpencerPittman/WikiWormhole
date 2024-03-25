@@ -1,8 +1,14 @@
 import pywikibot
-from wikiwormhole import constants
 import requests
 from typing import List
 from datetime import datetime
+import yaml
+
+# Pageviews API constants
+PAGEVIEWS_BASE_URL = "https://wikimedia.org/api/rest_v1/metrics/pageviews/per-article/en.wikipedia/all-access/all-agents"
+PAGEVIEWS_QUERY_START = datetime(2020, 10, 1, 0)
+PAGEVIEWS_QUERY_END = datetime(2020, 11, 1, 0)
+PAGEVIEWS_QUERY_GRANULARITY = 'MONTHLY'
 
 
 def generate_wiki_page_from_title(title: str) -> pywikibot.Page:
@@ -57,47 +63,44 @@ def retrieve_outgoing_links(page: pywikibot.Page) -> List[pywikibot.Page]:
 
 
 def retreive_pageviews(page: pywikibot.Page,
-                       start_dt: datetime,
-                       end_dt: datetime,
-                       granularity: str) -> List[int]:
+                       pv_config_path: str) -> List[int]:
     """
     Retreive page views for a wiki page.
 
     Args:
         page (pywikibot.Page): wiki page to retreive views for.
-        start_dt (datetime): time to start checking for page views.
-        end_dt (datetime): time to stop checking for page views.
+        pv_config_path (str): path to the .yaml file configurations for pageviews API.
 
     Raises:
-        Exception: start time must be before end time.
-        Exception: granularity is not daily or monthly.
+        Exception: path to pageviews configuration is invalid.
         Exception: request may fail.
 
     Returns:
         List[int]: returns page views per month.
     """
 
-    # Verify end comes after start date.
-    if start_dt >= end_dt:
-        raise Exception(
-            "WikiAPI.get_page_views: end date is before start date.")
+    try:
+        # Load configurations.
+        with open(pv_config_path, "r") as yaml_file:
+            config = yaml.safe_load(yaml_file)
 
-    # Verify granularity is monthly or daily.
-    if granularity not in ['DAILY', 'MONTHLY']:
+            website = config["PERSONAL_WEBSITE"]
+            email = config["EMAIL_ADDRESS"]
+    except FileNotFoundError:
         raise Exception(
-            "WikiAPI.get_page_views: granularity must be either DAILY or MONTHLY.")
+            "wikiapi.retreive_pageviews: Please provide valid path to YAML configurations.")
 
     # Headers for the API request.
     headers = {"Accept": "application/json",
-               "User-Agent": f"WikiWormhole/1.0 ({constants.PAGEVIEWS_WEBSITE}; {constants.PAGEVIEWS_EMAIL_ADDRESS})"}
+               "User-Agent": f"WikiWormhole/1.0 ({website}; {email})"}
 
     # Format datetimes as timestamps.
-    start_ts = _generate_timestamp(start_dt)
-    end_ts = _generate_timestamp(end_dt)
+    start_ts = _generate_timestamp(PAGEVIEWS_QUERY_START)
+    end_ts = _generate_timestamp(PAGEVIEWS_QUERY_END)
 
     # Generate the URL for the pageviews API.
     uri_title = page.title().replace(' ', '_')
-    generated_url = f"{constants.PAGEVIEWS_BASE_URL}/{uri_title}/{constants.PAGEVIEWS_QUERY_GRANULARITY}/{start_ts}/{end_ts}"
+    generated_url = f"{PAGEVIEWS_BASE_URL}/{uri_title}/{PAGEVIEWS_QUERY_GRANULARITY}/{start_ts}/{end_ts}"
 
     # Retrieve JSON data from the API.
     response = requests.get(generated_url, headers=headers)
