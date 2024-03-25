@@ -3,6 +3,7 @@ from src.title2vec import Title2Vec, EmbeddedTitle
 import numpy as np
 import pywikibot
 from src.traverse.traverse import Traverse
+from src.util.fixedpq import FixedPriorityQueue
 
 
 class SimilarTraverse(Traverse):
@@ -27,6 +28,8 @@ class SimilarTraverse(Traverse):
 
         self._target_embedded = self._t2v.embed_title(target_subject)
         self._blacklist = list()
+        self._sim_scores = dict()
+        self._fixpq = FixedPriorityQueue(10, True)
 
     def target_found(self) -> bool:
         """
@@ -82,35 +85,42 @@ class SimilarTraverse(Traverse):
         7. Select the most similar page as the next node.
         """
 
-        top_score, top_page = -1, None
-
         # Find the node connected to this page with the highest similarity
         for link in wikiapi.retrieve_outgoing_links(self._active_page):
-            # Don't revisit past nodes or failed nodes.
-            if link.title() in self._trace or link.title() in self._blacklist:
+            title = link.title()
+
+            # Don't vist past, failed, or invalid nodes.
+            if (title in self._trace or
+                title in self._blacklist or
+                    not Traverse.valid_page(title)):
                 continue
 
             # Inform the graph of this new connection
-            self._graph.new_edge(self._subject, link.title())
+            self._graph.new_edge(self._subject, title)
 
-            # Embed the title.
-            embedded_title = self._t2v.embed_title(link.title())
-            if len(embedded_title) == 0:
-                continue
+            if title not in self._sim_scores.keys():
 
-            # Calculate the similarity between the two titles.
-            sim_score = self.title_sim_score(
-                self._target_embedded, embedded_title)
-            # Save the current link if it has the highest similarity score.
-            if sim_score > top_score:
-                top_score = sim_score
-                top_page = link
+                # Embed the title.
+                embedded_title = self._t2v.embed_title(title)
+                if len(embedded_title) == 0:
+                    continue
+
+                # Calculate the similarity between the two titles.
+                sim_score = self.title_sim_score(
+                    self._target_embedded, embedded_title)
+
+                self._sim_scores[title] = sim_score
+
+            sim_score = self._sim_scores[title]
+
+            self._fixpq.push(sim_score, title)
 
         # Move to the most similar page.
-        if type(top_page) == pywikibot.Page:
-            self._subject = top_page.title()
-            self._active_page = top_page
-            self._trace.append(top_page.title())
+        if len(self._fixpq) > 0:
+            _, self._subject = self._fixpq.pop()
+            self._active_page = wikiapi.generate_wiki_page_from_title(
+                self._subject)
+            self._trace.append(self._subject)
         else:
             raise Exception("SimilarTraverse.traverse: no valid pages found.")
 
@@ -140,4 +150,15 @@ class SimilarTraverse(Traverse):
         sim_mat = dot / A_norm
         sim_mat = sim_mat / B_norm
 
-        return np.mean(np.max(sim_mat, axis=1))
+        similarity = 0
+
+        sim_scores = sorted(sim_mat.reshape(-1))
+        prop_rem = 1
+        for i, sim_score in enumerate(sim_scores[::-1]):
+            if i == len(sim_scores)-1:
+                similarity += sim_score * prop_rem
+            else:
+                similarity += sim_score * (0.9*prop_rem)
+                prop_rem -= 0.9 * prop_rem
+
+        return similarity
