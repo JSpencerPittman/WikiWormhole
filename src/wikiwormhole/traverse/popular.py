@@ -1,7 +1,7 @@
-from src import constants
-from src.util.sinkset import SinkSet
-from src.traverse.traverse import Traverse
-from src import wikiapi
+from wikiwormhole import constants
+from wikiwormhole.util.sinkset import SinkSet
+from wikiwormhole.traverse.traverse import Traverse
+from wikiwormhole import wikiapi
 from typing import List
 
 

@@ -1,12 +1,12 @@
-from src import constants
+from wikiwormhole import constants
 import gensim.downloader as gsapi
 from gensim.models import KeyedVectors
 from nltk.corpus import stopwords
+import numpy as np
 from typing import List
+import string
 import nltk
 import os
-import numpy as np
-import string
 
 
 class EmbeddedTitle(object):

@@ -1,5 +1,5 @@
 import pywikibot
-from src import constants
+from wikiwormhole import constants
 import requests
 from typing import List
 from datetime import datetime

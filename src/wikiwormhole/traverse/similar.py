@@ -1,9 +1,9 @@
-from src import constants, wikiapi
-from src.title2vec import Title2Vec, EmbeddedTitle
+from wikiwormhole import constants, wikiapi
+from wikiwormhole.title2vec import Title2Vec, EmbeddedTitle
 import numpy as np
-from src.traverse.traverse import Traverse
-from src.util.fixedpq import FixedPriorityQueue
-from src import constants
+from wikiwormhole.traverse.traverse import Traverse
+from wikiwormhole.util.fixedpq import FixedPriorityQueue
+from wikiwormhole import constants
 
 
 class SimilarTraverse(Traverse):
