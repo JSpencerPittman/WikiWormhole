@@ -1,9 +1,6 @@
 import yaml
 import sys
 import os
-
-
-import os
 import nltk
 import gensim.downloader as gsapi
 
@@ -17,6 +14,7 @@ def download_w2v(download_path: str):
 
     if not os.path.isdir(w2v_download_path):
         os.makedirs(w2v_download_path)
+        os.environ["GENSIM_DATA_DIR"] = w2v_download_path
 
     # Download W2V model if missing
     if W2V_PRETRAINED_MODEL not in os.listdir(w2v_download_path):
@@ -58,7 +56,7 @@ def generate_config(location: str):
 
 if __name__ == "__main__":
     if len(sys.argv) != 3:
-        raise Exception("setup_wikiwormhole <config-paht> <download-path>")
+        raise Exception("setup_wikiwormhole <config-path> <download-path>")
     generate_config(sys.argv[1])
     download_w2v(sys.argv[2])
     download_nltk(sys.argv[2])
