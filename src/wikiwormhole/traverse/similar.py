@@ -3,7 +3,6 @@ from wikiwormhole.title2vec import Title2Vec, EmbeddedTitle
 import numpy as np
 from wikiwormhole.traverse.traverse import Traverse
 from wikiwormhole.util.fixedpq import FixedPriorityQueue
-from wikiwormhole import constants
 
 
 class SimilarTraverse(Traverse):
