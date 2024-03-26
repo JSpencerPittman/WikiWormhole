@@ -2,7 +2,6 @@ import yaml
 import sys
 import os
 import nltk
-import gensim.downloader as gsapi
 
 # constants
 W2V_PRETRAINED_MODEL = "fasttext-wiki-news-subwords-300"
@@ -14,11 +13,12 @@ def download_w2v(download_path: str):
 
     if not os.path.isdir(w2v_download_path):
         os.makedirs(w2v_download_path)
-        os.environ["GENSIM_DATA_DIR"] = w2v_download_path
 
     # Download W2V model if missing
     if W2V_PRETRAINED_MODEL not in os.listdir(w2v_download_path):
         print("Word2Vec: Downloading pretrained weights...")
+        os.environ["GENSIM_DATA_DIR"] = w2v_download_path
+        import gensim.downloader as gsapi
         path = gsapi.load(W2V_PRETRAINED_MODEL, return_path=True)
         print(f"Downloaded weights to:\n{path}")
 
