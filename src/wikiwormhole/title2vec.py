@@ -1,12 +1,14 @@
-from src import constants
-import gensim.downloader as gsapi
 from gensim.models import KeyedVectors
 from nltk.corpus import stopwords
+import numpy as np
 from typing import List
+import string
 import nltk
 import os
-import numpy as np
-import string
+
+# constants
+W2V_PRETRAINED_MODEL = "fasttext-wiki-news-subwords-300"
+W2V_KEY_LIMIT = 200000
 
 
 class EmbeddedTitle(object):
@@ -31,51 +33,30 @@ class EmbeddedTitle(object):
 
 
 class Title2Vec(object):
-    def __init__(self):
+    def __init__(self, download_path: str):
         """
         Constructor for Title2Vec.
 
         Downloads the Word2Vec model along with the natural language toolkit.
         """
 
-        # Ensure directory for holding W2V model exists
-        if not os.path.isdir(constants.T2V_GENSIM_PATH):
-            os.makedirs(constants.T2V_GENSIM_PATH)
-
-        # Download W2V model if missing
-        if constants.T2V_PRETRAINED_MODEL not in os.listdir(constants.T2V_GENSIM_PATH):
-            print("Word2Vec: Downloading pretrained weights...")
-            path = gsapi.load(
-                constants.T2V_PRETRAINED_MODEL, return_path=True)
-            print(f"Downloaded weights to:\n{path}")
-
         # Load the W2V model into embedder
         pretrained_path = os.path.join(
-            constants.T2V_GENSIM_PATH, constants.T2V_PRETRAINED_MODEL)
-        pretrained_path = os.path.join(
-            pretrained_path, f"{constants.T2V_PRETRAINED_MODEL}.gz")
+            download_path, "w2v", W2V_PRETRAINED_MODEL, f"{W2V_PRETRAINED_MODEL}.gz")
+
+        if not os.path.exists(pretrained_path):
+            raise Exception(
+                "Title2Vec.__init__: please download pretrained model.")
+
         self._embedder = KeyedVectors.load_word2vec_format(pretrained_path,
                                                            binary=False,
-                                                           limit=constants.T2V_KEY_LIMIT)
+                                                           limit=W2V_KEY_LIMIT)
 
         # Ensure directory for holding nltk stopwords exists.
-        if not os.path.isdir(constants.T2V_NLTK_PATH):
-            os.makedirs(constants.T2V_NLTK_PATH)
-
-        # Download stopwords if missing
-        if 'corpora' not in os.listdir(constants.T2V_NLTK_PATH):
-            print("Word2Vec: Downloading nltk stopwords...")
-            nltk.download('stopwords', download_dir=constants.T2V_NLTK_PATH)
-            print("Downloaded nltk.stopwords")
-
-        # Download punkt if missing.
-        if 'tokenizers' not in os.listdir(constants.T2V_NLTK_PATH):
-            print("Word2Vec: Downloading nltk punkt...")
-            nltk.download('punkt', download_dir=constants.T2V_NLTK_PATH)
-            print("Downloaded ntlk.punkt")
+        nltk_path = os.path.join(download_path, "nltk")
 
         # load the stopwords
-        nltk.data.path.append(constants.T2V_NLTK_PATH)
+        nltk.data.path.append(nltk_path)
         self._stopwords = set(stopwords.words("english"))
 
     def embed_title(self, title: str) -> EmbeddedTitle:

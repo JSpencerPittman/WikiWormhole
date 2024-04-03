@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 import stat
-from src.traverse.graph import SearchGraph
+from wikiwormhole.traverse.graph import SearchGraph
 
 
 class Traverse(ABC):

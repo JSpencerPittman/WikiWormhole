@@ -1,12 +1,12 @@
-from src import constants
-from src.util.sinkset import SinkSet
-from src.traverse.traverse import Traverse
-from src import wikiapi
+from wikiwormhole.util.sinkset import SinkSet
+from wikiwormhole.traverse.traverse import Traverse
+from wikiwormhole import wikiapi
 from typing import List
+from datetime import datetime
 
 
 class PopularTraverse(Traverse):
-    def __init__(self, start_subject: str) -> None:
+    def __init__(self, start_subject: str, pv_config_path: str, explore_per_traversal=5) -> None:
         """
         Constructor for Popular Traversal.
 
@@ -16,6 +16,8 @@ class PopularTraverse(Traverse):
 
         Args:
             start_subject (str): The root of our search for which all nodes must stem from.
+            pv_config_path (str): path to the .yaml file configurations for pageviews API.
+            explore_per_traversal (int): number of nodes to randomly explore on each traversal.
         """
         super(PopularTraverse, self).__init__(start_subject)
 
@@ -23,6 +25,10 @@ class PopularTraverse(Traverse):
             start_subject)
         self._frontier = SinkSet()
         self._frontier.fill([start_subject])
+
+        self._explore_per_traversal = explore_per_traversal
+
+        self._pv_config_path = pv_config_path
 
     def traverse(self) -> None:
         """
@@ -39,10 +45,7 @@ class PopularTraverse(Traverse):
         """
 
         # Select nodes from the frontier to explore
-        explore = self._frontier.sample(
-            constants.POP_EXPLORE_PER_TRAVERSAL, True)
-        print(explore)
-        print()
+        explore = self._frontier.sample(self._explore_per_traversal, True)
 
         if len(explore) == 0:
             raise Exception(
@@ -94,10 +97,8 @@ class PopularTraverse(Traverse):
         for page in self._trace:
             page = wikiapi.generate_wiki_page_from_title(page)
             try:
-                views = sum(wikiapi.retreive_pageviews(page,
-                                                       constants.PAGEVIEWS_QUERY_START,
-                                                       constants.PAGEVIEWS_QUERY_END,
-                                                       constants.PAGEVIEWS_QUERY_GRANULARITY))
+                views = sum(wikiapi.retreive_pageviews(
+                    page, self._pv_config_path))
             except Exception as e:
                 continue
 

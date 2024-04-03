@@ -1,13 +1,12 @@
-from src import constants, wikiapi
-from src.title2vec import Title2Vec, EmbeddedTitle
+from wikiwormhole import wikiapi
+from wikiwormhole.title2vec import Title2Vec, EmbeddedTitle
 import numpy as np
-from src.traverse.traverse import Traverse
-from src.util.fixedpq import FixedPriorityQueue
-from src import constants
+from wikiwormhole.traverse.traverse import Traverse
+from wikiwormhole.util.fixedpq import FixedPriorityQueue
 
 
 class SimilarTraverse(Traverse):
-    def __init__(self, start_subject: str, target_subject: str, t2v: Title2Vec) -> None:
+    def __init__(self, start_subject: str, target_subject: str, t2v: Title2Vec, priority_queue_size=10, decay_factor=0.9) -> None:
         """
         Constructor for SimilarTraverse.
 
@@ -17,6 +16,10 @@ class SimilarTraverse(Traverse):
         Args:
             start_subject (str): the starting subject to navigate to the target subject from. 
             target_subject (str): the subject we are trying to get to from the starting point.
+            t2v (Title2Vec): a Word2Vec model for embedding titles.
+            priority_queue_size (int): size of fixed priority queue. A smaller size promotoes emphasis on
+                depth over breadth.
+            decay_factor (float): the decay factor used for calculating similarity between two titles. 
         """
 
         super(SimilarTraverse, self).__init__(start_subject)
@@ -29,8 +32,9 @@ class SimilarTraverse(Traverse):
         self._target_embedded = self._t2v.embed_title(target_subject)
         self._blacklist = list()
         self._sim_scores = dict()
-        self._fixpq = FixedPriorityQueue(
-            constants.SIM_PRIORITYQUEUE_SIZE, True)
+        self._fixpq = FixedPriorityQueue(priority_queue_size, True)
+
+        self._decay_factor = decay_factor
 
     def target_found(self) -> bool:
         """
@@ -159,7 +163,7 @@ class SimilarTraverse(Traverse):
             if i == len(sim_scores)-1:
                 similarity += sim_score * prop_rem
             else:
-                similarity += sim_score * (0.9*prop_rem)
-                prop_rem -= 0.9 * prop_rem
+                similarity += sim_score * (self._decay_factor*prop_rem)
+                prop_rem -= self._decay_factor * prop_rem
 
         return similarity

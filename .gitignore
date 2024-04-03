@@ -1,11 +1,10 @@
 # IDE configurations
 .vscode
 
-# Virtual Environment
+# Virtual environment
 env/
 
 # Caches
-WikiWormhole.egg-info/
 __pycache__/
 dist/
 data/
@@ -14,3 +13,7 @@ apicache/
 # APIs
 apicache-py3/
 throttle.ctrl
+
+# Build files
+*egg-info*
+build
