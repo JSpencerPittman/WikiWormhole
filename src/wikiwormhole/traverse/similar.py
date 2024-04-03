@@ -3,6 +3,8 @@ from wikiwormhole.title2vec import Title2Vec, EmbeddedTitle
 import numpy as np
 from wikiwormhole.traverse.traverse import Traverse
 from wikiwormhole.util.fixedpq import FixedPriorityQueue
+from wikiwormhole.util.graph import ConnectionGraph
+from typing import List, Union
 
 
 class SimilarTraverse(Traverse):
@@ -36,7 +38,9 @@ class SimilarTraverse(Traverse):
 
         self._decay_factor = decay_factor
 
-    def target_found(self) -> bool:
+        self._graph = ConnectionGraph[str](start_subject)
+
+    def target_reached(self) -> bool:
         """
         Has the target been reached in the graph?
 
@@ -46,7 +50,21 @@ class SimilarTraverse(Traverse):
 
         return self._graph.node_exists(self._target)
 
-    def traverse(self):
+    def path_to_target(self) -> Union[List[str], None]:
+        """
+        Returns the path from the source node to the target.
+
+        Returns:
+            Union[List[str], None]: The path from the source node to the target, if no such
+                path exists return None.
+        """
+
+        if not self._graph.node_exists(self._target):
+            return None
+        else:
+            return self._graph.unravel(self._target)
+
+    def traverse(self) -> None:
         """
         This algorithm works as follows:
         1. Loop through all outgoing links for the current page.
@@ -78,7 +96,7 @@ class SimilarTraverse(Traverse):
                 # Remember the failed page.
                 self._blacklist.append(failed_subject)
 
-    def _attempt_traverse(self):
+    def _attempt_traverse(self) -> None:
         """
         This algorithm works as follows:
         1. Loop through all outgoing links for the current page.
@@ -101,7 +119,7 @@ class SimilarTraverse(Traverse):
                 continue
 
             # Inform the graph of this new connection
-            self._graph.new_edge(self._subject, title)
+            self._graph.new_connection(self._subject, title)
 
             if title not in self._sim_scores.keys():
 
