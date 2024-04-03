@@ -1,13 +1,17 @@
 from abc import ABC, abstractmethod
-import stat
-from wikiwormhole.traverse.graph import SearchGraph
+from wikiwormhole.util.graph import ConnectionGraph
+from typing import List
+import wikiapi
+from pywikibot import Page
 
 
 class Traverse(ABC):
     def __init__(self, start_subject: str):
-        self._subject = start_subject
-        self._trace = [start_subject]
-        self._graph = SearchGraph(start_subject)
+        self._active_subject: str = start_subject
+        self._active_page: Page = wikiapi.generate_wiki_page_from_title(
+            start_subject)
+        self._trace: List[str] = [start_subject]
+        self._graph: ConnectionGraph[str] = ConnectionGraph[str](start_subject)
 
     @abstractmethod
     def traverse(self):

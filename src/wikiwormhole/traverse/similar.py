@@ -3,7 +3,6 @@ from wikiwormhole.title2vec import Title2Vec, EmbeddedTitle
 import numpy as np
 from wikiwormhole.traverse.traverse import Traverse
 from wikiwormhole.util.fixedpq import FixedPriorityQueue
-from wikiwormhole.util.graph import ConnectionGraph
 from typing import List, Union
 
 
@@ -25,20 +24,19 @@ class SimilarTraverse(Traverse):
         """
 
         super(SimilarTraverse, self).__init__(start_subject)
-        self._target = target_subject
 
-        self._active_page = wikiapi.generate_wiki_page_from_title(
-            start_subject)
+        self._target_subject = target_subject
         self._t2v = t2v
 
         self._target_embedded = self._t2v.embed_title(target_subject)
+
+        # Caching of subjects
         self._blacklist = list()
         self._sim_scores = dict()
         self._fixpq = FixedPriorityQueue(priority_queue_size, True)
 
+        # Hyperparameters
         self._decay_factor = decay_factor
-
-        self._graph = ConnectionGraph[str](start_subject)
 
     def target_reached(self) -> bool:
         """
@@ -48,7 +46,7 @@ class SimilarTraverse(Traverse):
             bool: the target has been reached if true.
         """
 
-        return self._graph.node_exists(self._target)
+        return self._graph.node_exists(self._target_subject)
 
     def path_to_target(self) -> Union[List[str], None]:
         """
@@ -59,10 +57,10 @@ class SimilarTraverse(Traverse):
                 path exists return None.
         """
 
-        if not self._graph.node_exists(self._target):
+        if not self._graph.node_exists(self._target_subject):
             return None
         else:
-            return self._graph.unravel(self._target)
+            return self._graph.unravel(self._target_subject)
 
     def traverse(self) -> None:
         """
@@ -89,7 +87,7 @@ class SimilarTraverse(Traverse):
                 prev_subject = self._trace[-1]
 
                 # Undo traversal.
-                self._subject = prev_subject
+                self._active_subject = prev_subject
                 self._active_page = wikiapi.generate_wiki_page_from_title(
                     prev_subject)
 
@@ -119,7 +117,7 @@ class SimilarTraverse(Traverse):
                 continue
 
             # Inform the graph of this new connection
-            self._graph.new_connection(self._subject, title)
+            self._graph.new_connection(self._active_subject, title)
 
             if title not in self._sim_scores.keys():
 
@@ -140,10 +138,10 @@ class SimilarTraverse(Traverse):
 
         # Move to the most similar page.
         if len(self._fixpq) > 0:
-            _, self._subject = self._fixpq.pop()
+            _, self._active_subject = self._fixpq.pop()
             self._active_page = wikiapi.generate_wiki_page_from_title(
-                self._subject)
-            self._trace.append(self._subject)
+                self._active_subject)
+            self._trace.append(self._active_subject)
         else:
             raise Exception("SimilarTraverse.traverse: no valid pages found.")
 

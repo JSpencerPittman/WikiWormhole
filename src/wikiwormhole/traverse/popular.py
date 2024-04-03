@@ -1,8 +1,8 @@
 from wikiwormhole.util.sinkset import SinkSet
 from wikiwormhole.traverse.traverse import Traverse
 from wikiwormhole import wikiapi
-from typing import List
-from datetime import datetime
+from typing import List, cast
+from wikiwormhole.util.graph import AbsorbNode
 
 
 class PopularTraverse(Traverse):
@@ -21,14 +21,14 @@ class PopularTraverse(Traverse):
         """
         super(PopularTraverse, self).__init__(start_subject)
 
-        self._active_page = wikiapi.generate_wiki_page_from_title(
-            start_subject)
+        self._pv_config_path = pv_config_path
+
+        # Caching of subjects
         self._frontier = SinkSet()
         self._frontier.fill([start_subject])
 
+        # Hyperparameters
         self._explore_per_traversal = explore_per_traversal
-
-        self._pv_config_path = pv_config_path
 
     def traverse(self) -> None:
         """
@@ -58,18 +58,20 @@ class PopularTraverse(Traverse):
             for link in wikiapi.retrieve_outgoing_links(page):
                 if not Traverse.valid_page(link.title()):
                     continue
-                self._graph.new_edge(node, link.title())
+                self._graph.new_connection(node, link.title())
                 self._frontier.fill([link.title()])
 
         # Identify most popular node
         max_refs, pop_node = -1, ""
-        for node in self._graph.target_nodes():
+        for node in self._graph.asorb_nodes():
             # Prevent revisiting nodes.
             if node in self._trace:
                 continue
             # If the node has a higher connectivity set it as the most popular node.
-            if self._graph.total_references(node) > max_refs:
-                max_refs = self._graph.total_references(node)
+            num_cnxs = cast(AbsorbNode, self._graph.node(node)
+                            ).total_connections()
+            if num_cnxs > max_refs:
+                max_refs = num_cnxs
                 pop_node = node
 
         # Update state.
@@ -107,4 +109,4 @@ class PopularTraverse(Traverse):
                 max_views = views
                 pop_page = page
 
-        return self._graph.unravel(pop_page.title())
+        return cast(List[str], self._graph.unravel(pop_page.title()))
