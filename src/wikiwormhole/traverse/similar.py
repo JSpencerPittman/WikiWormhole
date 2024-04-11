@@ -26,6 +26,11 @@ class SimilarTraverse(Traverse):
         super(SimilarTraverse, self).__init__(start_subject)
 
         self._target_subject = target_subject
+
+        if not wikiapi.generate_wiki_page_from_title(target_subject).exists():
+            raise Exception(
+                'SimilarTraverse: please provide a target page that exists.')
+
         self._t2v = t2v
 
         self._target_embedded = self._t2v.embed_title(target_subject)

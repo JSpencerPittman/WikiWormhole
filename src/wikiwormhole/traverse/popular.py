@@ -101,6 +101,9 @@ class PopularTraverse(Traverse):
             try:
                 views = sum(wikiapi.retreive_pageviews(
                     page, self._pv_config_path))
+            except FileNotFoundError as e:
+                print("Please provide valid path for wikiapi configurations.")
+                continue
             except Exception as e:
                 continue
 

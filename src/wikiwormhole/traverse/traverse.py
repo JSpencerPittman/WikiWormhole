@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from wikiwormhole.util.graph import ConnectionGraph
 from typing import List
-import wikiapi
+from wikiwormhole import wikiapi
 from pywikibot import Page
 
 
@@ -10,6 +10,11 @@ class Traverse(ABC):
         self._active_subject: str = start_subject
         self._active_page: Page = wikiapi.generate_wiki_page_from_title(
             start_subject)
+
+        if not self._active_page.exists():
+            raise Exception(
+                'Traverse: please provide a traverse page that exists.')
+
         self._trace: List[str] = [start_subject]
         self._graph: ConnectionGraph[str] = ConnectionGraph[str](start_subject)
 
